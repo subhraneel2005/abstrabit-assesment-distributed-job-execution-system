@@ -14,30 +14,30 @@ export interface Job {
   status: JobStatus;
   retry_count: number;
   max_retries: number;
-  payload: Record<string, unknown>;
+  payload: unknown;
   assigned_worker: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface Worker {
   id: string;
   status: WorkerStatus;
-  last_heartbeat: string | null;
+  last_heartbeat: Date | null;
   max_capacity: number;
   current_jobs_processing: number;
   assigned_jobs: string[];
-  metadata: Record<string, unknown> | null;
-  created_at: string;
-  updated_at: string;
+  metadata: unknown;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface ExecutionHistory {
   id: string;
   job_id: string;
   worker_id: string | null;
-  from_status: string;
+  from_status: string | null;
   to_status: string;
   reason: string | null;
-  created_at: string;
+  created_at: Date;
 }

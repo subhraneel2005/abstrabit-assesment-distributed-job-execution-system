@@ -1,5 +1,5 @@
-import { runMigrations } from './db/migrations.js';
-import { query } from './db/index.js';
+import { sql } from 'drizzle-orm';
+import { db } from './db/index.js';
 import { startScheduler } from './scheduler/index.js';
 import { startHeartbeatMonitor } from './heartbeat/index.js';
 import { spawnWorker } from './workers/index.js';
@@ -11,9 +11,7 @@ dotenv.config();
 async function main(): Promise<void> {
   logger.info('Starting distributed job execution platform...');
 
-  await runMigrations();
-
-  await query("UPDATE workers SET status = 'OFFLINE' WHERE status IN ('ONLINE', 'BUSY')");
+  await db.execute(sql`UPDATE workers SET status = 'OFFLINE' WHERE status IN ('ONLINE', 'BUSY')`);
 
   startScheduler(3000);
   startHeartbeatMonitor(3000);
@@ -21,6 +19,9 @@ async function main(): Promise<void> {
   await spawnWorker(3);
   await spawnWorker(3);
   await spawnWorker(2);
+
+  await db.execute(sql`SELECT 1`)
+  logger.info("Database is UP")
 
   const { default: app } = await import('./api/app.js');
 

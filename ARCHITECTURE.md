@@ -17,7 +17,6 @@ The primary design goals are:
 * At-least-once execution guarantees
 * Simple and maintainable architecture
 
-The design intentionally favors practical engineering tradeoffs over unnecessary complexity.
 
 ---
 

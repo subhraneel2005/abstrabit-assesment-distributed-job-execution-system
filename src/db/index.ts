@@ -1,27 +1,25 @@
 import "dotenv/config"
 import pg from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import * as schema from './schema.js';
 import { logger } from '../utils/index.js';
 
 const { Pool } = pg;
 
 const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT!, 10),
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST ?? 'localhost',
+  port: parseInt(process.env.DB_PORT ?? '5432', 10),
+  database: process.env.DB_NAME ?? 'job_execution',
+  user: process.env.DB_USER ?? 'postgres',
+  password: process.env.DB_PASSWORD ?? 'postgres',
+  ssl: false
 });
 
 pool.on('error', (err) => {
   logger.error({ err }, 'Unexpected database pool error');
 });
 
-export async function query<T extends pg.QueryResultRow>(text: string, params?: unknown[]): Promise<pg.QueryResult<T>> {
-  const start = Date.now();
-  const result = await pool.query<T>(text, params);
-  const duration = Date.now() - start;
-  logger.debug({ text, duration, rows: result.rowCount }, 'executed query');
-  return result;
-}
+const db = drizzle(pool, { schema });
 
-export default pool;
+export { db, pool };
+export default db;

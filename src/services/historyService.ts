@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { query } from '../db/index.js';
+import { eq, asc } from 'drizzle-orm';
+import { db } from '../db/index.js';
+import { executionHistory } from '../db/schema.js';
 import type { ExecutionHistory } from '../types/index.js';
 
 export async function recordHistory(
@@ -7,22 +9,26 @@ export async function recordHistory(
   workerId: string | null,
   fromStatus: string | null,
   toStatus: string,
-  reason: string | null
+  reason: string | null,
 ): Promise<ExecutionHistory> {
-  const id = uuidv4();
-  const result = await query<ExecutionHistory>(
-    `INSERT INTO execution_history (id, job_id, worker_id, from_status, to_status, reason)
-     VALUES ($1, $2, $3, $4, $5, $6)
-     RETURNING *`,
-    [id, jobId, workerId, fromStatus, toStatus, reason]
-  );
-  return result.rows[0]!;
+  const [row] = await db
+    .insert(executionHistory)
+    .values({
+      id: uuidv4(),
+      job_id: jobId,
+      worker_id: workerId,
+      from_status: fromStatus,
+      to_status: toStatus,
+      reason,
+    })
+    .returning();
+  return row!;
 }
 
 export async function getJobHistory(jobId: string): Promise<ExecutionHistory[]> {
-  const result = await query<ExecutionHistory>(
-    'SELECT * FROM execution_history WHERE job_id = $1 ORDER BY created_at ASC',
-    [jobId]
-  );
-  return result.rows;
+  return db
+    .select()
+    .from(executionHistory)
+    .where(eq(executionHistory.job_id, jobId))
+    .orderBy(asc(executionHistory.created_at));
 }

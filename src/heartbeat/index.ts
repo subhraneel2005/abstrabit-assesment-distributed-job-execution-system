@@ -17,7 +17,7 @@ export async function checkHeartbeats(): Promise<void> {
       if (worker.status === 'DEAD' || worker.status === 'OFFLINE') continue;
       if (!worker.last_heartbeat) continue;
 
-      const lastBeat = new Date(worker.last_heartbeat).getTime();
+      const lastBeat = worker.last_heartbeat.getTime();
       if (now - lastBeat <= HEARTBEAT_TIMEOUT_MS) continue;
 
       logger.warn(
